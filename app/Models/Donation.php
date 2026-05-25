@@ -9,7 +9,14 @@ class Donation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'campaign_id', 'amount'];
+    protected $fillable = [
+        'user_id', 
+        'campaign_id', 
+        'amount', 
+        'app_fee', 
+        'campaigner_fee',
+        'total_paid'
+        ];
 
     public function user() {return $this->belongsTo(User::class);}
     public function campaign() {return $this->belongsTo(Campaign::class);}
