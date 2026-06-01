@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Siapa yang nyumbang
             $table->foreignId('campaign_id')->constrained()->cascadeOnDelete(); // Nyumbang ke campaign mana
-            $table->integer('amount'); // Nominal donasi
+            $table->decimal('amount', 15, 2); // Nominal donasi
+            $table->string('status')->default('pending');
+            $table->string('snap_token')->nullable();
             $table->timestamps();
         });
     }

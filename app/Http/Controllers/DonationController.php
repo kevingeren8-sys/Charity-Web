@@ -18,36 +18,52 @@ class DonationController extends Controller
     // Proses masukin duitnya
     public function store(Request $request, Campaign $campaign)
     {
+        // Validasi nominal donasi (misal minimal Rp 10.000)
         $request->validate([
-            'amount' => 'required|integer|min:10000',
+            'amount' => 'required|numeric|min:10000',
         ]);
 
-        $grossAmount = $request->amount;
+        $total_paid = $request->amount; 
+        $app_fee = $total_paid * 0.025; 
+        $campaigner_fee = $total_paid * ($campaign->campaigner_fee_percentage / 100); 
+        $amount_bersih = $total_paid - $app_fee - $campaigner_fee;
 
-        $appFee = round($grossAmount * 0.025);
-        $campaignerFee = round($grossAmount * ($campaign->campaigner_fee_percentage / 100));
-        $netAmount = $grossAmount - $appFee - $campaignerFee;
-
-        // 1. Simpen catetan donasi
-        Donation::create([
+        // Simpan ke database
+        $donation = Donation::create([
             'user_id' => Auth::id(),
             'campaign_id' => $campaign->id,
-            'amount' => $netAmount,
-            'app_fee' => $appFee,
-            'campaigner_fee' => $campaignerFee,
-            'total_paid' => $grossAmount
+            'amount' => $amount_bersih, 
+            'app_fee' => $app_fee,
+            'campaigner_fee' => $campaigner_fee,
+            'total_paid' => $total_paid, 
+            'status' => 'pending',
+            'snap_token' => null, 
         ]);
 
-        // 2. Tambahin duitnya ke total dana campaign
-        $campaign->increment('current_amount', $netAmount);
+        return redirect()->route('donations.pay', $donation->id);
+    }
 
-        // 3. Tarik data terbaru dari DB, terus cek apakah udah tembus target
-        $campaign->refresh(); 
-        if ($campaign->current_amount >= $campaign->target_amount) {
-            // Kalau tembus, otomatis statusnya jadi completed
-            $campaign->update(['status' => 'completed']);
+    public function pay(Donation $donation)
+    {
+        // Pastiin cuma yang statusnya pending yang bisa diakses
+        if ($donation->status !== 'pending') {
+            return redirect()->route('dashboard')->with('error', 'Donasi ini sudah diproses.');
         }
 
-        return redirect()->route('dashboard')->with('success', 'Makasih orang baik! Donasi kamu berhasil masuk.');
+        return view('donations.pay', compact('donation'));
     }
+
+    public function confirm(Donation $donation)
+    {
+        // Ubah status donasi jadi paid
+        $donation->update(['status' => 'paid']);
+
+        // Tambahin uangnya ke total dana terkumpul di campaign
+        $donation->campaign->increment('current_amount', $donation->amount);
+
+        // Balikin ke dashboard dengan pesan sukses
+        return redirect()->route('dashboard')->with('success', 'Hore! Pembayaran berhasil dikonfirmasi. Terima kasih orang baik!');
+    }
+
+    
 }

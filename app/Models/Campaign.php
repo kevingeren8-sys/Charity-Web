@@ -16,10 +16,15 @@ class Campaign extends Model
         'title',
         'category',
         'description',
+        'image',
         'target_amount',
         'current_amount',
+        'withdrawn_amount',
         'status',
-        'campaigner_fee_percentage'
+        'campaigner_fee_percentage',
+        'withdrawal_status',
+        'bank_name',
+        'bank_account_number'
     ];
 
     public function user()

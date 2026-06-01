@@ -15,7 +15,9 @@ class Donation extends Model
         'amount', 
         'app_fee', 
         'campaigner_fee',
-        'total_paid'
+        'total_paid',
+        'status',
+        'snap_token'
         ];
 
     public function user() {return $this->belongsTo(User::class);}

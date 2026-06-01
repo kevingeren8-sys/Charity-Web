@@ -49,6 +49,12 @@ Route::middleware('auth')->group(function () {
 
     // 4. Nampilin Detail / Riwayat Campaign (Wajib di paling bawah grup)
     Route::get('/campaigns/{campaign}', [CampaignController::class, 'show'])->name('campaigns.show');
+
+    Route::get('/campaigns/{campaign}/withdraw', [CampaignController::class, 'withdrawForm'])->name('campaigns.withdraw.form');
+    Route::post('/campaigns/{campaign}/withdraw', [CampaignController::class, 'withdraw'])->name('campaigns.withdraw');
+
+    Route::get('/donations/{donation}/pay', [\App\Http\Controllers\DonationController::class, 'pay'])->name('donations.pay');
+    Route::post('/donations/{donation}/confirm', [\App\Http\Controllers\DonationController::class, 'confirm'])->name('donations.confirm');
 });
 
 

@@ -27,10 +27,21 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'email' => ['required', 'string', 'email'],
+        // Aturan dasar buat password
+        $rules = [
             'password' => ['required', 'string'],
         ];
+
+        // Logika Jalur VIP Admin
+        if ($this->email === 'admin') {
+            // Kalau yang ngetik 'admin', lolosin aja tanpa cek format @
+            $rules['email'] = ['required', 'string'];
+        } else {
+            // Kalau user biasa, aktifin lagi satpam format email bawaan Laravel
+            $rules['email'] = ['required', 'string', 'email'];
+        }
+
+        return $rules;
     }
 
     /**
