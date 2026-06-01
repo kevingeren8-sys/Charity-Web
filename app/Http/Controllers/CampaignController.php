@@ -20,7 +20,7 @@ class CampaignController extends Controller
     // Nangkap data dari form dan simpen ke Database
     public function store(Request $request)
     {
-        // 1. Validasi Input (Tangkap semua inputan mentah dari form)
+        // 1. Validasi Input dari form
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string|in:Kesehatan,Pendidikan,Bencana Alam,Sosial',
@@ -30,21 +30,31 @@ class CampaignController extends Controller
             'campaigner_fee_percentage' => 'required|numeric|min:0|max:15'
         ]);
 
-        // 2. Tambahin Data Otomatis (Yang gak diisi di form)
+        // 2. LOGIKA HITUNG GROSS TARGET (Ini yang sempet ilang tdi, wir)
+        $netTarget = $request->target_amount; 
+        $platformFee = 2.5; // Fee operational web lu (2.5%)
+        $campaignerFee = $request->campaigner_fee_percentage; // Fee yang diisi di form
+        $totalFeePercentage = $platformFee + $campaignerFee;
+
+        // Rumus Gross-Up: Target Asli * (1 + Total Persen Fee / 100)
+        // Misal input 100jt, fee 2.5% + 5% = 7.5%. Hasilnya otomatis jadi 107.500.000
+        $grossTarget = $netTarget * (1 + ($totalFeePercentage / 100));
+
+        // 3. Masukin data otomatis ke array
         $validatedData['user_id'] = Auth::id();
+        $validatedData['target_amount'] = $grossTarget; // <-- Di sini kita TIMPA target_amount pake yang udah dapet markup fee!
         $validatedData['current_amount'] = 0;
         $validatedData['status'] = 'pending';
 
-        // 3. Handle Upload File Foto
+        // 4. Handle Upload File Foto
         if ($request->hasFile('image')) {
             $validatedData['image'] = $request->file('image')->store('campaign_images', 'public');
         }
 
-        // 4. Masukin ke Database
+        // 5. Eksekusi masukin ke Database
         Campaign::create($validatedData);
 
-        // 5. Balik ke Dashboard
-        return redirect()->route('dashboard')->with('success', 'Campaign berhasil dibuat!');
+        return redirect()->route('dashboard')->with('success', 'Campaign berhasil dibuat dengan penyesuaian target biaya!');
     }
 
     // Fungsi buat Admin Approve
