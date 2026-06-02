@@ -59,11 +59,11 @@ class DonationController extends Controller
         $donation->update(['status' => 'paid']);
 
         // Tambahin uangnya ke total dana terkumpul di campaign
-        $donation->campaign->increment('current_amount', $donation->amount);
+        $donation->campaign->increment('current_amount', $donation->total_paid);
 
         // Balikin ke dashboard dengan pesan sukses
         return redirect()->route('dashboard')->with('success', 'Hore! Pembayaran berhasil dikonfirmasi. Terima kasih orang baik!');
     }
 
-    
+
 }
