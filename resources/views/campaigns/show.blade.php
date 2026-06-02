@@ -1,21 +1,16 @@
 <x-app-layout>
-    <!-- Background utama pakai stone-50 biar hangat dan elegan -->
     <div class="min-h-screen bg-stone-50 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <!-- Tombol Kembali (Minimalist) -->
             <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-stone-500 hover:text-stone-800 transition mb-6">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Kembali ke Dashboard
             </a>
 
-            <!-- Grid Layout: Kiri Konten (2/3), Kanan Sticky Card (1/3) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 
-                <!-- BAGIAN KIRI: Foto & Cerita -->
                 <div class="lg:col-span-2 space-y-8">
                     
-                    <!-- Foto Banner Campaign (UDAH DI-UPDATE BISA NAMPILIN FOTO) -->
                     <div class="w-full aspect-[16/9] bg-stone-200 rounded-3xl overflow-hidden shadow-sm relative group">
                         @if($campaign->image)
                             <img src="{{ asset('storage/' . $campaign->image) }}" alt="{{ $campaign->title }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
@@ -27,7 +22,6 @@
                         @endif
                     </div>
 
-                    <!-- Judul & Info Campaigner -->
                     <div class="bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
                         <span class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wide text-emerald-700 bg-emerald-50 rounded-full">
                             {{ $campaign->category ?? 'Kategori Bantuan' }}
@@ -38,7 +32,6 @@
                         
                         <div class="flex items-center gap-4 py-6 border-y border-stone-100 mb-6">
                             <div class="w-12 h-12 rounded-full bg-stone-200 flex items-center justify-center text-stone-500 font-bold text-lg">
-                                <!-- Inisial nama -->
                                 {{ substr($campaign->user->name ?? 'A', 0, 1) }}
                             </div>
                             <div>
@@ -51,7 +44,6 @@
                             </div>
                         </div>
 
-                        <!-- Deskripsi Campaign -->
                         <div class="prose prose-stone max-w-none">
                             <h3 class="text-xl font-bold text-stone-900 mb-4">Cerita Campaign</h3>
                             <p class="text-stone-600 leading-relaxed whitespace-pre-line">
@@ -59,7 +51,6 @@
                             </p>
                         </div>
 
-                        <!-- SEGMEN TRANSPARANSI & DAFTAR ORANG BAIK -->
                         <div class="mt-12 pt-8 border-t border-stone-100">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-xl font-bold text-stone-900">Kabar Transparansi & Donatur</h3>
@@ -68,7 +59,6 @@
                                 </span>
                             </div>
 
-                            <!-- Info Singkat Potongan -->
                             <div class="bg-stone-50 rounded-2xl p-4 mb-8 flex items-start gap-3 border border-stone-200">
                                 <svg class="w-5 h-5 text-stone-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 <p class="text-xs text-stone-600 leading-relaxed">
@@ -76,7 +66,6 @@
                                 </p>
                             </div>
 
-                            <!-- List Donatur -->
                             <div class="space-y-4">
                                 @if($campaign->donations && $campaign->donations->where('status', 'paid')->count() > 0)
                                     @foreach($campaign->donations->where('status', 'paid')->sortByDesc('created_at') as $donation)
@@ -100,7 +89,6 @@
                                         </div>
                                     @endforeach
                                 @else
-                                    <!-- State kalau belum ada yang donasi -->
                                     <div class="text-center py-10 px-4 rounded-2xl bg-stone-50 border border-dashed border-stone-200">
                                         <div class="w-12 h-12 bg-stone-200 rounded-full flex items-center justify-center mx-auto mb-3">
                                             <svg class="w-6 h-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318z"></path></svg>
@@ -114,12 +102,9 @@
                     </div>
                 </div>
 
-                <!-- BAGIAN KANAN: Sticky Donation Card -->
                 <div class="lg:col-span-1">
-                    <!-- Sticky nyala pas di-scroll di desktop -->
                     <div class="sticky top-8 bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
                         
-                        <!-- Info Dana -->
                         <div class="mb-2">
                             <p class="text-4xl font-extrabold text-stone-900">
                                 Rp {{ number_format($campaign->current_amount, 0, ',', '.') }}
@@ -129,7 +114,6 @@
                             Terkumpul dari target <span class="font-bold text-stone-800">Rp {{ number_format($campaign->target_amount, 0, ',', '.') }}</span>
                         </p>
 
-                        <!-- Progress Bar (Elegan & Mewah) -->
                         @php
                             $persen = ($campaign->target_amount > 0) ? min(100, ($campaign->current_amount / $campaign->target_amount) * 100) : 0;
                         @endphp
@@ -139,7 +123,6 @@
                             </div>
                         </div>
 
-                        <!-- CTA TOMBOL RAKSASA (Nembak ke halaman form Quick Select) -->
                         <a href="/campaigns/{{ $campaign->id }}/donate" class="w-full flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg py-4 px-8 rounded-xl shadow-[0_8px_20px_-6px_rgba(5,150,105,0.4)] hover:-translate-y-1 transition-all duration-300">
                             Donasi Sekarang
                         </a>
@@ -148,7 +131,43 @@
                             <p>Lebih dari 1.000 orang telah berdonasi hari ini.</p>
                         </div>
 
-                        <!-- Tombol Tarik Dana khusus Campaigner -->
+                        <div class="mt-8 pt-6 border-t border-stone-100">
+                            <h4 class="text-sm font-bold text-stone-900 mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Transparansi Alokasi Dana
+                            </h4>
+
+                            @php
+                                // Hitung-hitungan persentase & nominal on the fly
+                                $totalTerkumpul = $campaign->current_amount;
+                                $platformFeePercent = 2.5; // Fee statis platform
+                                $campaignerFeePercent = $campaign->campaigner_fee_percentage ?? 0;
+
+                                $potonganPlatform = $totalTerkumpul * ($platformFeePercent / 100);
+                                $potonganCampaigner = $totalTerkumpul * ($campaignerFeePercent / 100);
+                                $danaBersih = $totalTerkumpul - $potonganPlatform - $potonganCampaigner;
+                            @endphp
+
+                            <div class="space-y-3 bg-stone-50 p-4 rounded-xl border border-stone-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-stone-600">Penyaluran Program</span>
+                                    <span class="text-sm font-bold text-emerald-700">Rp {{ number_format($danaBersih, 0, ',', '.') }}</span>
+                                </div>
+
+                                @if($campaignerFeePercent > 0)
+                                <div class="flex justify-between items-center border-t border-stone-200 pt-2">
+                                    <span class="text-xs font-medium text-stone-500">Fee Penggalang ({{ $campaignerFeePercent }}%)</span>
+                                    <span class="text-xs font-semibold text-stone-700">Rp {{ number_format($potonganCampaigner, 0, ',', '.') }}</span>
+                                </div>
+                                @endif
+
+                                <div class="flex justify-between items-center border-t border-stone-200 pt-2">
+                                    <span class="text-xs font-medium text-stone-500">Fee Platform ({{ $platformFeePercent }}%)</span>
+                                    <span class="text-xs font-semibold text-stone-700">Rp {{ number_format($potonganPlatform, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         @if(Auth::check() && Auth::id() === $campaign->user_id)
                             <div class="mt-8 pt-6 border-t border-stone-100 text-center">
                                 <p class="text-xs text-stone-500 mb-3">Anda adalah pembuat campaign ini.</p>
