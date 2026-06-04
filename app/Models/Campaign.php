@@ -36,4 +36,9 @@ class Campaign extends Model
     {
         return $this->hasMany(Donation::class);
     }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
 }

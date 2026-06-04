@@ -140,10 +140,10 @@
                             @php
                                 // Hitung-hitungan persentase & nominal on the fly
                                 $totalTerkumpul = $campaign->current_amount;
-                                $platformFeePercent = 2.5; // Fee statis platform
                                 $campaignerFeePercent = $campaign->campaigner_fee_percentage ?? 0;
 
-                                $potonganPlatform = $totalTerkumpul * ($platformFeePercent / 100);
+                                $potonganPlatform = min($totalTerkumpul * 0.025, 5000000); 
+                                
                                 $potonganCampaigner = $totalTerkumpul * ($campaignerFeePercent / 100);
                                 $danaBersih = $totalTerkumpul - $potonganPlatform - $potonganCampaigner;
                             @endphp
@@ -162,7 +162,7 @@
                                 @endif
 
                                 <div class="flex justify-between items-center border-t border-stone-200 pt-2">
-                                    <span class="text-xs font-medium text-stone-500">Fee Platform ({{ $platformFeePercent }}%)</span>
+                                    <span class="text-xs font-medium text-stone-500">Fee Platform (2.5%)</span>
                                     <span class="text-xs font-semibold text-stone-700">Rp {{ number_format($potonganPlatform, 0, ',', '.') }}</span>
                                 </div>
                             </div>

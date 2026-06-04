@@ -32,13 +32,15 @@ class CampaignController extends Controller
 
         // 2. LOGIKA HITUNG GROSS TARGET (Ini yang sempet ilang tdi, wir)
         $netTarget = $request->target_amount; 
-        $platformFee = 2.5; // Fee operational web lu (2.5%)
-        $campaignerFee = $request->campaigner_fee_percentage; // Fee yang diisi di form
-        $totalFeePercentage = $platformFee + $campaignerFee;
+        $expectedPlatformFee = $netTarget * 0.025; // Fee operational web lu (2.5%)
+        $maxPlatformFee = 5000000;
+        $platformFee = min($expectedPlatformFee, $maxPlatformFee);
+
+        $campaignerFee = $netTarget * ($request->campaigner_fee_percentage / 100); // Fee yang diisi di form
 
         // Rumus Gross-Up: Target Asli * (1 + Total Persen Fee / 100)
         // Misal input 100jt, fee 2.5% + 5% = 7.5%. Hasilnya otomatis jadi 107.500.000
-        $grossTarget = $netTarget * (1 + ($totalFeePercentage / 100));
+        $grossTarget = $netTarget + $platformFee + $campaignerFee;
 
         // 3. Masukin data otomatis ke array
         $validatedData['user_id'] = Auth::id();
@@ -88,6 +90,26 @@ class CampaignController extends Controller
         return view('campaigns.show', compact('campaign', 'donations'));
     }
 
+    public function withdrawForm(Campaign $campaign)
+    {
+        if (Auth::id() != $campaign->user_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        // Total uang kotor masuk
+        $saldoTerkumpul = $campaign->current_amount;
+
+        // tahan hak platform
+        $hakPlatform = min($saldoTerkumpul * 0.025, 5000000);
+
+        // Hitung saldo yang beneran bisa ditarik
+        $saldoTersedia = ($saldoTerkumpul - $hakPlatform) - $campaign->withdrawn_amount;
+
+        $withdrawals = $campaign->withdrawals()->latest()->get();
+
+        return view('campaigns.withdraw', compact('campaign', 'saldoTersedia', 'hakPlatform', 'withdrawals'));
+    }
+
     public function withdraw(Request $request, Campaign $campaign)
     {
         // 1. Validasi kepemilikan
@@ -95,42 +117,36 @@ class CampaignController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
+        $saldoTerkumpul = $campaign->current_amount;
+        $hakPlatform = min($saldoTerkumpul * 0.025, 5000000);
+        $saldoTersedia = ($saldoTerkumpul - $hakPlatform) - $campaign->withdrawn_amount;
+
         // 2. Validasi input nominal penarikan (misal minimal tarik Rp 10.000)
         $request->validate([
-            'amount' => 'required|numeric|min:10000',
+            'amount' => 'required|numeric|min:10000|max:' . $saldoTersedia,
+            'bank_name' => 'required|string',
+            'bank_account_number' => 'required|numeric',
         ]);
 
         $tarikDana = $request->amount;
-        
-        // 3. Hitung Sisa Saldo (Dana Terkumpul - Dana yang Pernah Ditarik)
-        $saldoTersedia = $campaign->current_amount - $campaign->withdrawn_amount;
 
-        // 4. Cek apakah nominal yang dimasukin masuk akal
-        if ($tarikDana > $saldoTersedia) {
-            return back()->with('error', 'Gagal! Nominal penarikan melebihi saldo yang tersedia (Saldo: Rp ' . number_format($saldoTersedia, 0, ',', '.') . ').');
-        }
+        Withdrawal::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => Auth::id(),
+            'amount' => $tarikDana,
+            'bank_name' => $request->bank_name,
+            'bank_account_number' => $request->bank_account_number,
+            'status' => 'success'
+        ]);
 
-        // 5. Langsung potong saldonya (tambahin ke history penarikan)
+        // Update total withdrawn di campaign
         $campaign->increment('withdrawn_amount', $tarikDana);
-
-        // Kalau ditarik habis semua, bisa sekalian otomatisin statusnya 
-        if ($campaign->current_amount == $campaign->withdrawn_amount) {
+        
+        if (($saldoTersedia - $tarikDana) == 0) {
             $campaign->update(['status' => 'completed']);
         }
 
         return back()->with('success', 'Berhasil! Dana sebesar Rp ' . number_format($tarikDana, 0, ',', '.') . ' langsung dicairkan ke rekening kamu.');
-    }
-
-    public function withdrawForm(Campaign $campaign)
-    {
-        if (Auth::id() != $campaign->user_id) {
-            abort(403, 'Akses ditolak.');
-        }
-
-        // Hitung saldo yang beneran bisa ditarik
-        $saldoTersedia = $campaign->current_amount - $campaign->withdrawn_amount;
-
-        return view('campaigns.withdraw', compact('campaign', 'saldoTersedia'));
     }
 
     // Contoh nama fungsinya, sesuaikan sama kodingan lu
