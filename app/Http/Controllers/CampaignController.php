@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Campaign;
+use App\Models\Withdrawal;
 use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
