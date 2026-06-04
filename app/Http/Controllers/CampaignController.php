@@ -141,10 +141,6 @@ class CampaignController extends Controller
 
         // Update total withdrawn di campaign
         $campaign->increment('withdrawn_amount', $tarikDana);
-        
-        if (($saldoTersedia - $tarikDana) == 0) {
-            $campaign->update(['status' => 'completed']);
-        }
 
         return back()->with('success', 'Berhasil! Dana sebesar Rp ' . number_format($tarikDana, 0, ',', '.') . ' langsung dicairkan ke rekening kamu.');
     }

@@ -20,7 +20,7 @@
                     
                     <div class="flex justify-between items-center text-sm text-emerald-800 mb-2">
                         <span>Potongan Fee Platform:</span>
-                        <span class="font-semibold text-rose-500">- Rp {{ number_format($jatahPlatform, 0, ',', '.') }}</span>
+                        <span class="font-semibold text-rose-500">- Rp {{ number_format($hakPlatform, 0, ',', '.') }}</span>
                     </div>
 
                     <div class="flex justify-between items-center text-sm text-emerald-800 mb-4 border-b border-emerald-200 pb-4">
