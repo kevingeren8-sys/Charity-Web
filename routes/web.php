@@ -7,7 +7,7 @@ use App\Models\Campaign;
 use App\Http\Controllers\DonationController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 Route::get('/dashboard', function () {
